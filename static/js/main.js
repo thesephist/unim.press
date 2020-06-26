@@ -302,7 +302,7 @@ class App extends Component {
             <p class="header-edition-body justify">
               <strong>The Unim.press</strong> is a Reddit reader in the style of
               a certain well-known metropolitan newspaper. You're currently
-              browsing /r/${this.subreddit} on the Unim.press. The Unim.press is
+              reading /r/${this.subreddit} on the Unim.press. The Unim.press is
               built by
               <strong
                 ><a target="_blank" href="https://thesephist.com"
@@ -317,7 +317,7 @@ class App extends Component {
           </div>
         </div>
         <div class="header-bar flex-row">
-          <div class="header-vol bar-aside">VOL. CLXIX . . . No. 58,736</div>
+          <div class="header-vol bar-aside">VOL. CLXX . . . No. 3.14159</div>
           <div class="header-nyc">New York, ${formatDate()}</div>
           <div class="header-controls bar-aside">
             See other subreddits–<select

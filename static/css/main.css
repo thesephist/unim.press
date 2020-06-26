@@ -160,7 +160,9 @@ header,
   overflow: hidden;
 }
 
-.story:hover .story-title {
+.story-title:hover,
+.story-content:hover,
+.story-author:hover {
   text-decoration: underline;
 }
 
@@ -177,7 +179,7 @@ header,
   height: 1px;
   background: var(--foreground);
   margin: 1rem 0;
-  width: 60%;
+  width: 50%;
   margin-left: 20%;
 }
 
@@ -257,7 +259,7 @@ header,
 
 .center-spread .story-title {
   text-transform: uppercase;
-  font-size: 3em;
+  font-size: 2.4em;
   text-align: justify;
 }
 
@@ -294,7 +296,9 @@ header,
 
 .left-sidebar .story:not(:last-child),
 .sidebar-spread .story:not(:last-child) {
-  margin-bottom: 1px solid var(--foreground);
+  padding-bottom: 1.5em;
+  border-bottom: 1px solid var(--foreground);
+  margin-bottom: 2em;
 }
 
 .mini {
