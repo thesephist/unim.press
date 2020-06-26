@@ -1,0 +1,15 @@
+{
+  "name": "unim.press",
+  "version": "0.1.0",
+  "description": "Browse /r/all and Hacker News like a newspaper",
+  "main": "static/js/main.js",
+  "repository": "git@github.com:thesephist/unim.press.git",
+  "author": "Linus Lee <linus@thesephist.com>",
+  "license": "MIT",
+  "scripts": {
+    "fmt": "prettier --write ./static/js/main.js"
+  },
+  "devDependencies": {
+    "prettier": "^2.0.5"
+  }
+}

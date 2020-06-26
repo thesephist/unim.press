@@ -1,0 +1,300 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 18px;
+}
+
+body {
+  background: #f8f8f8;
+  background-image: url(/img/newspaper.jpg);
+  background-size: 200px 200px;
+  --foreground: #222;
+  font-size: var(--foreground);
+}
+
+body,
+select {
+  font-family: "EB Garamond", "Georgia", "Times New Roman", serif;
+}
+
+.app {
+  width: 1200px;
+  margin: 1em 0;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform-origin: top left;
+  transition: transform 0.3s;
+}
+
+.fraktur {
+  font-family: "UnifrakturMaguntia", cursive;
+}
+
+.flex-row,
+.flex-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.flex-row {
+  flex-direction: row;
+}
+
+a {
+  text-decoration: none;
+  color: var(--foreground);
+}
+
+.story-title,
+p {
+  line-height: 1.4em;
+  hyphens: auto;
+}
+
+p,
+.justify {
+  text-align: justify;
+}
+
+footer {
+  width: 100%;
+  border-top: 1px solid var(--foreground);
+  padding-top: 2em;
+  margin: 2em 0;
+}
+
+.header-edition a,
+footer a {
+  text-decoration: underline;
+}
+
+/* HEADER */
+
+header {
+  width: 100%;
+}
+
+header a:hover {
+  text-decoration: underline;
+}
+
+.masthead-link {
+  width: 900px;
+}
+
+h1.masthead {
+  text-align: center;
+  font-size: 5em;
+  margin: 0.5em 0;
+  width: 100%;
+}
+
+header,
+.header-main,
+.header-bar {
+  width: 1200px;
+}
+
+.header-main,
+.header-bar {
+  align-items: center;
+}
+
+.header-tagline {
+  border: 1px solid var(--foreground);
+  text-align: center;
+  padding: 1em;
+}
+
+.header-main-aside {
+  box-sizing: border-box;
+  width: 300px;
+}
+
+.header-bar {
+  border-top: 1px solid var(--foreground);
+  border-bottom: 2px solid var(--foreground);
+  padding: 0.3em 0;
+  margin-bottom: 1em;
+  justify-content: space-between;
+}
+
+.header-edition-title {
+  font-weight: bold;
+  width: 100%;
+  text-align: center;
+}
+
+.header-edition-body {
+  font-size: 0.8em;
+}
+
+.header-nyc {
+  text-transform: uppercase;
+}
+
+.bar-aside {
+  width: 300px;
+}
+
+.header-controls {
+  text-align: right;
+}
+
+/* STORY */
+
+.story {
+  padding: 0.6em 0.8em;
+  overflow: hidden;
+  box-sizing: border-box;
+  width: 100%;
+  overflow: hidden;
+}
+
+.story:hover .story-title {
+  text-decoration: underline;
+}
+
+.story-title {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  letter-spacing: -0.03em;
+}
+
+.story-title::after {
+  display: block;
+  content: "";
+  height: 1px;
+  background: var(--foreground);
+  margin: 1rem 0;
+  width: 60%;
+  margin-left: 20%;
+}
+
+.story-image {
+  width: 100%;
+  filter: grayscale(100%);
+}
+
+.story:hover .story-image {
+  filter: none;
+}
+
+.story-byline {
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+.story-author {
+  text-transform: uppercase;
+}
+
+.story-source {
+  font-weight: bold;
+  font-size: 1rem;
+  text-transform: uppercase;
+  text-decoration: underline;
+  margin-top: 0;
+  margin-bottom: 0.8em;
+  width: 100%;
+  text-align: center;
+  font-size: 0.9em;
+}
+
+.continued {
+  width: 100%;
+  text-align: right;
+  margin-top: -1em;
+}
+
+.smaller {
+  font-size: 0.8em;
+}
+
+.smaller .story-byline {
+  text-align: center;
+}
+
+.smaller p {
+  font-size: 0.9rem;
+}
+
+/* MACRO LAYOUT */
+
+.main {
+  padding-bottom: 1.5em;
+  border-bottom: 1px solid var(--foreground);
+  margin-bottom: 4px;
+}
+
+.mini {
+  border-top: 1px solid var(--foreground);
+  padding-top: 2em;
+}
+
+.left-sidebar {
+  width: 300px;
+  border-right: 1px solid var(--foreground);
+}
+
+.spreads {
+  width: 900px;
+}
+
+.center-spread {
+  width: 600px;
+}
+
+.center-spread .story-title {
+  text-transform: uppercase;
+  font-size: 3em;
+  text-align: justify;
+}
+
+.center-spread .story-source {
+  display: none;
+}
+
+.sidebar-spread {
+  width: 300px;
+  font-size: 0.7rem;
+}
+
+.sidebar-spread .story-title {
+  font-size: 2em;
+}
+
+.sidebar-spread .story-byline {
+  font-size: 1rem;
+}
+
+.sidebar-spread .story-title,
+.sidebar-spread .story-byline {
+  width: 100%;
+  text-align: center;
+}
+
+.bottom {
+  width: 100%;
+}
+
+.bottom .story-title {
+  font-style: italic;
+}
+
+.left-sidebar .story:not(:last-child),
+.sidebar-spread .story:not(:last-child) {
+  margin-bottom: 1px solid var(--foreground);
+}
+
+.mini {
+  font-size: 0.7rem;
+}
