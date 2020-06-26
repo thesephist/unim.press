@@ -135,6 +135,7 @@ header,
 
 .header-edition-body {
   font-size: 0.8em;
+  margin-top: 0.2em;
 }
 
 .header-nyc {
@@ -166,6 +167,7 @@ header,
 .story-title {
   margin-top: 0;
   margin-bottom: 1rem;
+  line-height: 1.2em;
   letter-spacing: -0.03em;
 }
 

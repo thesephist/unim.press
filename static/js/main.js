@@ -101,6 +101,28 @@ const debounce = (fn, delayMillis) => {
   };
 };
 
+function fmtCreated(created) {
+  if (!created) {
+    return "some time ago";
+  }
+
+  const date = new Date(created * 1000);
+  const delta = (Date.now() - date) / 1000;
+  if (delta < 60) {
+    return "< 1 min ago";
+  } else if (delta < 3600) {
+    return `${~~(delta / 60)} min ago`;
+  } else if (delta < 86400) {
+    return `${~~(delta / 3600)} hrs ago`;
+  } else if (delta < 86400 * 2) {
+    return "yesterday";
+  } else if (delta < 86400 * 3) {
+    return "2 days ago";
+  } else {
+    return date.toLocaleDateString() + " " + formatTime(date);
+  }
+}
+
 function formatDate() {
   const date = new Date();
   return `${DAYS[date.getDay()]}, ${
@@ -117,10 +139,12 @@ async function fetchRedditStories(subreddit) {
   return posts
     .filter((post) => !post.data.pinned && !post.data.stickied)
     .map((post) => {
+      console.log(post);
       let {
-        author,
-        permalink,
         title,
+        author,
+        created_utc,
+        permalink,
         subreddit,
         thumbnail,
         selftext,
@@ -130,8 +154,9 @@ async function fetchRedditStories(subreddit) {
       }
 
       return {
-        title: title,
-        author: author,
+        title,
+        author,
+        created: created_utc,
         authorHref: `https://old.reddit.com/user/${author}`,
         href: `https://old.reddit.com${permalink}`,
         imageHref: thumbnail,
@@ -166,53 +191,44 @@ async function fetchHNStories() {
   });
 }
 
-/**
- * LAYOUT:
- *
- * HEADER
- * -------------- <hr> -------------
- * SIDEBAR CENTER     SPREAD    SIDEBAR
- * STORIES   smaller stories    SIDEBAR
- * SIDEBAR ----------- <hr> --------------
- * SIDEBAR | FEW SMALLER STORIES
- * ------------- <hr> --------------
- * mini stories
- *
- * references:
- * - https://static01.nyt.com/images/2020/06/26/nytfrontpage/scan.pdf
- * - https://archive.nytimes.com/www.nytimes.com/indexes/2008/11/05/pageone/scan/index.html
- */
-
-function LoremIpsum(text) {
+function LoremIpsum(created, text) {
   if (text) {
     const words = text.split(" ");
     if (words.length > 100) {
       return [
         html`<p>
-          ${text.split(" ").slice(0, 100).join(" ")} ...
+          ${fmtCreated(created)}–${text.split(" ").slice(0, 100).join(" ")} ...
         </p>`,
         html`<p class="continued><em>Continued on Page A${R()}</em></p>`,
       ];
     } else {
-      return html`<p>${text}</p>`;
+      return html`<p>${fmtCreated(created)}–${text}</p>`;
     }
   }
 
   return html`<p>
-    Lorem ipsum dolor sit amet, ei mel cibo meliore instructior, eam te etiam
-    clita. Id falli facilis intellegam his, eu populo dolorem offendit eam.
-    Noster nemore luptatum ex sit. Ei sea melius definitiones.
+    ${fmtCreated(created)}–Lorem ipsum dolor sit amet, ei mel cibo meliore
+    instructior, eam te etiam clita. Id falli facilis intellegam his, eu populo
+    dolorem offendit eam. Noster nemore luptatum ex sit. Ei sea melius
+    definitiones.
   </p>`;
 }
-
-function Controls() {}
 
 function Story(story) {
   if (!story) {
     return null;
   }
 
-  const { title, author, authorHref, href, imageHref, source, text } = story;
+  const {
+    title,
+    author,
+    created,
+    authorHref,
+    href,
+    imageHref,
+    source,
+    text,
+  } = story;
   return html`<div class="story">
     <a href="https://old.reddit.com${source}">
       <div class="story-source">${source}</div>
@@ -228,7 +244,7 @@ function Story(story) {
     </div>
     <a href="${href}" target="_blank">
       ${imageHref ? html`<img class="story-image" src="${imageHref}" />` : null}
-      <div class="story-content">${LoremIpsum(text)}</div>
+      <div class="story-content">${LoremIpsum(created, text)}</div>
     </a>
   </div>`;
 }
@@ -266,7 +282,7 @@ class App extends Component {
     const mini2 = stories.slice(16, 21);
     const mini3 = stories.slice(21, 25);
 
-    const scale = Math.min((window.innerWidth / 1200) * 0.9, 1);
+    const scale = Math.min((window.innerWidth / 1200) * 0.96, 1);
 
     return html`<div
       class="app flex-column"
@@ -304,7 +320,7 @@ class App extends Component {
           <div class="header-vol bar-aside">VOL. CLXIX . . . No. 58,736</div>
           <div class="header-nyc">New York, ${formatDate()}</div>
           <div class="header-controls bar-aside">
-            See other subs–<select
+            See other subreddits–<select
               oninput="${(evt) => {
                 const selected = evt.target.value;
                 window.location.hash = selected;

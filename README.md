@@ -8,6 +8,7 @@ Story type:
 {
   title: string;
   author: string;
+  created: number; // UNIX
   authorHref: string;
   href: string;
   imageHref: string | null;
