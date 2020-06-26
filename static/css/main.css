@@ -304,3 +304,22 @@ header,
 .mini {
   font-size: 0.7rem;
 }
+
+@keyframes wowwow {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+
+.loading {
+  width: 100%;
+  font-size: 2.4em;
+  font-style: italic;
+  text-align: center;
+  margin: 3em 0;
+  animation: wowwow 2s ease-in-out infinite;
+}

@@ -119,7 +119,7 @@ function fmtCreated(created) {
   } else if (delta < 86400 * 3) {
     return "2 days ago";
   } else {
-    return date.toLocaleDateString() + " " + formatTime(date);
+    return date.toLocaleDateString();
   }
 }
 
@@ -139,7 +139,6 @@ async function fetchRedditStories(subreddit) {
   return posts
     .filter((post) => !post.data.pinned && !post.data.stickied)
     .map((post) => {
-      console.log(post);
       let {
         title,
         author,
@@ -253,6 +252,7 @@ class App extends Component {
   init() {
     this.stories = [];
     this.subreddit = window.location.hash.substr(1) || "all";
+    this._loading = false;
 
     this.resize = debounce(this.resize.bind(this), 500);
     window.addEventListener("resize", this.resize);
@@ -263,12 +263,16 @@ class App extends Component {
     this.render();
   }
   async fetch() {
+    this._loading = true;
+    this.render();
+
     if (this.subreddit == "hn") {
       this.stories = await fetchHNStories();
     } else {
       this.stories = await fetchRedditStories(this.subreddit);
     }
 
+    this._loading = false;
     this.render();
   }
   compose() {
@@ -283,6 +287,28 @@ class App extends Component {
     const mini3 = stories.slice(21, 25);
 
     const scale = Math.min((window.innerWidth / 1200) * 0.96, 1);
+
+    const storiesSection = [
+      html`<div class="main flex-row">
+        <div class="left-sidebar flex-column smaller">
+          ${leftSidebar.map(Story)}
+        </div>
+        <div class="spreads flex-column">
+          <div class="top flex-row">
+            <div class="center-spread">
+              ${centerSpreads.map(Story)}
+            </div>
+            <div class="sidebar sidebar-spread flex-column smaller">
+              ${sidebarSpread.map(Story)}
+            </div>
+          </div>
+          <div class="bottom flex-row">${bottom.map(Story)}</div>
+        </div>
+      </div>`,
+      html`<div class="mini flex-row smaller">${mini.map(Story)}</div>`,
+      html`<div class="mini flex-row smaller">${mini2.map(Story)}</div>`,
+      html`<div class="mini flex-row smaller">${mini3.map(Story)}</div>`,
+    ];
 
     return html`<div
       class="app flex-column"
@@ -336,25 +362,9 @@ class App extends Component {
           </div>
         </div>
       </header>
-      <div class="main flex-row">
-        <div class="left-sidebar flex-column smaller">
-          ${leftSidebar.map(Story)}
-        </div>
-        <div class="spreads flex-column">
-          <div class="top flex-row">
-            <div class="center-spread">
-              ${centerSpreads.map(Story)}
-            </div>
-            <div class="sidebar sidebar-spread flex-column smaller">
-              ${sidebarSpread.map(Story)}
-            </div>
-          </div>
-          <div class="bottom flex-row">${bottom.map(Story)}</div>
-        </div>
-      </div>
-      <div class="mini flex-row smaller">${mini.map(Story)}</div>
-      <div class="mini flex-row smaller">${mini2.map(Story)}</div>
-      <div class="mini flex-row smaller">${mini3.map(Story)}</div>
+      ${this._loading
+        ? html`<div class="loading">Loading stories...</div>`
+        : storiesSection}
       <footer>
         <p>
           The Unim.press is a project by
