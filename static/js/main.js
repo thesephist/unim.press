@@ -160,7 +160,7 @@ async function fetchRedditStories(subreddit) {
       } = post.data;
 
       return {
-        title,
+        title: decodeHTMLEntities(title),
         author,
         created: created_utc,
         authorHref: `https://www.reddit.com/user/${author}`,
