@@ -133,6 +133,12 @@ function formatDate() {
   } ${date.getDate()}, ${date.getFullYear()}`;
 }
 
+function decodeHTMLEntities(s) {
+  const txt = document.createElement("textarea");
+  txt.innerHTML = s;
+  return txt.textContent;
+}
+
 // fetch and normalize stories from a subreddit's "hot" section
 async function fetchRedditStories(subreddit) {
   const resp = await fetch(`https://api.reddit.com/r/${subreddit}/hot?limit=25`)
@@ -149,12 +155,9 @@ async function fetchRedditStories(subreddit) {
         created_utc,
         permalink,
         subreddit,
-        thumbnail,
+        preview,
         selftext,
       } = post.data;
-      if (["image", "default", "self", "nsfw"].includes(thumbnail)) {
-        thumbnail = null;
-      }
 
       return {
         title,
@@ -162,7 +165,18 @@ async function fetchRedditStories(subreddit) {
         created: created_utc,
         authorHref: `https://www.reddit.com/user/${author}`,
         href: `https://www.reddit.com${permalink}`,
-        imageHref: thumbnail,
+        // this monstrosity traverses the object path down, checking for
+        // any absent properties, to get a thumbnail image
+        // of at most 640px wide.
+        imageHref:
+          (preview &&
+            preview.images &&
+            decodeHTMLEntities(
+              preview.images[0].resolutions[
+                Math.min(3, preview.images[0].resolutions.length - 1)
+              ].url
+            )) ||
+          null,
         source: "/r/" + subreddit,
         text: selftext,
       };
