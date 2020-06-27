@@ -28,6 +28,7 @@ const MONTHS = [
   "December",
 ];
 
+// from the classic Reddit's top ribbon
 const SUBREDDITS = [
   "AskReddit",
   "pics",
@@ -78,6 +79,7 @@ const SUBREDDITS = [
   "blog",
 ];
 
+// Random page number for "Continued on Page..."
 function R() {
   const MAX_PAGE = 30;
   return ~~(Math.random() * MAX_PAGE);
@@ -101,12 +103,12 @@ const debounce = (fn, delayMillis) => {
   };
 };
 
-function fmtCreated(created) {
-  if (!created) {
+function formatRelativeDate(timestamp) {
+  if (!timestamp) {
     return "some time ago";
   }
 
-  const date = new Date(created * 1000);
+  const date = new Date(timestamp * 1000);
   const delta = (Date.now() - date) / 1000;
   if (delta < 60) {
     return "< 1 min ago";
@@ -123,6 +125,7 @@ function fmtCreated(created) {
   }
 }
 
+// for header top bar
 function formatDate() {
   const date = new Date();
   return `${DAYS[date.getDay()]}, ${
@@ -130,8 +133,9 @@ function formatDate() {
   } ${date.getDate()}, ${date.getFullYear()}`;
 }
 
+// fetch and normalize stories from a subreddit's "hot" section
 async function fetchRedditStories(subreddit) {
-  const resp = await fetch(`https://api.reddit.com/r/${subreddit}/hot`)
+  const resp = await fetch(`https://api.reddit.com/r/${subreddit}/hot?limit=25`)
     .then((r) => r.json())
     .catch((e) => console.log(error));
   const posts = resp.data.children;
@@ -156,8 +160,8 @@ async function fetchRedditStories(subreddit) {
         title,
         author,
         created: created_utc,
-        authorHref: `https://old.reddit.com/user/${author}`,
-        href: `https://old.reddit.com${permalink}`,
+        authorHref: `https://www.reddit.com/user/${author}`,
+        href: `https://www.reddit.com${permalink}`,
         imageHref: thumbnail,
         source: "/r/" + subreddit,
         text: selftext,
@@ -165,6 +169,7 @@ async function fetchRedditStories(subreddit) {
     });
 }
 
+// when you go to /#hn, it actually loads the top 20 posts of Hacker News
 async function fetchHNStories() {
   const storyIDs = await fetch(HN_TOP_URL)
     .then((r) => r.json())
@@ -190,29 +195,35 @@ async function fetchHNStories() {
   });
 }
 
-function LoremIpsum(created, text) {
+function StoryBody(created, text) {
   if (text) {
     const words = text.split(" ");
     if (words.length > 100) {
       return [
         html`<p>
-          ${fmtCreated(created)}–${text.split(" ").slice(0, 100).join(" ")} ...
+          ${formatRelativeDate(created)}–${text
+            .split(" ")
+            .slice(0, 100)
+            .join(" ")}
+          ...
         </p>`,
         html`<p class="continued><em>Continued on Page A${R()}</em></p>`,
       ];
     } else {
-      return html`<p>${fmtCreated(created)}–${text}</p>`;
+      return html`<p>${formatRelativeDate(created)}–${text}</p>`;
     }
   }
 
   return html`<p>
-    ${fmtCreated(created)}–Lorem ipsum dolor sit amet, ei mel cibo meliore
-    instructior, eam te etiam clita. Id falli facilis intellegam his, eu populo
-    dolorem offendit eam. Noster nemore luptatum ex sit. Ei sea melius
+    ${formatRelativeDate(created)}–Lorem ipsum dolor sit amet, ei mel cibo
+    meliore instructior, eam te etiam clita. Id falli facilis intellegam his, eu
+    populo dolorem offendit eam. Noster nemore luptatum ex sit. Ei sea melius
     definitiones.
   </p>`;
 }
 
+// All stories that appear have the same DOM structure, displayed
+// differently with CSS. This renders such a single story.
 function Story(story) {
   if (!story) {
     return null;
@@ -229,7 +240,7 @@ function Story(story) {
     text,
   } = story;
   return html`<div class="story">
-    <a href="https://old.reddit.com${source}">
+    <a href="https://www.reddit.com${source}">
       <div class="story-source">${source}</div>
     </a>
     <a href="${href}" target="_blank>
@@ -243,7 +254,7 @@ function Story(story) {
     </div>
     <a href="${href}" target="_blank">
       ${imageHref ? html`<img class="story-image" src="${imageHref}" />` : null}
-      <div class="story-content">${LoremIpsum(created, text)}</div>
+      <div class="story-content">${StoryBody(created, text)}</div>
     </a>
   </div>`;
 }
@@ -286,6 +297,10 @@ class App extends Component {
     const mini2 = stories.slice(16, 21);
     const mini3 = stories.slice(21, 25);
 
+    // Instead of having a responsive layout that wrecks the newspaper
+    // feel, if the window is too small, we simply scale the entire
+    // front page down appropriately. Here we compute that ratio
+    // to leave a 2% margin on either side for visual comfort.
     const scale = Math.min((window.innerWidth / 1200) * 0.96, 1);
 
     const storiesSection = [
@@ -384,6 +399,8 @@ class App extends Component {
   render(...args) {
     super.render(...args);
 
+    // Simplest way to keep the "selected" value of the subreddit
+    // selector in check is to just set it after render.
     this.node.querySelector("select").value = this.subreddit;
   }
 }
