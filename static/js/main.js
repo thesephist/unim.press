@@ -4,13 +4,13 @@ const html = window.jdom;
 const HN_TOP_URL = "https://hacker-news.firebaseio.com/v0/topstories.json";
 
 const DAYS = [
+  "Sunday",
   "Monday",
   "Tuesday",
   "Wednesday",
   "Thursday",
   "Friday",
   "Saturday",
-  "Sunday",
 ];
 
 const MONTHS = [
@@ -395,6 +395,7 @@ class App extends Component {
               }}"
             >
               <option value="all" selected>all</option>
+              <option value="popular" selected>popular</option>
               ${SUBREDDITS.map(
                 (slug) => html`<option value="${slug}">${slug}</option>`
               )}
