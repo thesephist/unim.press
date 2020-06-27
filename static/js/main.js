@@ -381,6 +381,16 @@ class App extends Component {
                 window.location.hash = selected;
                 this.subreddit = selected;
                 this.fetch();
+
+                try {
+                  ga(
+                    "send",
+                    "pageview",
+                    `${window.location.pathname}${window.location.hash}`
+                  );
+                } catch (e) {
+                  console.log(e);
+                }
               }}"
             >
               <option value="all" selected>all</option>
