@@ -171,6 +171,7 @@ async function fetchRedditStories(subreddit) {
         imageHref:
           (preview &&
             preview.images &&
+            preview.images[0].resolutions.length &&
             decodeHTMLEntities(
               preview.images[0].resolutions[
                 Math.min(3, preview.images[0].resolutions.length - 1)
