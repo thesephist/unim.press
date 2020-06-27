@@ -143,7 +143,7 @@ function decodeHTMLEntities(s) {
 async function fetchRedditStories(subreddit) {
   const resp = await fetch(`https://api.reddit.com/r/${subreddit}/hot?limit=25`)
     .then((r) => r.json())
-    .catch((e) => console.log(error));
+    .catch((e) => console.log(e));
   const posts = resp.data.children;
 
   return posts
@@ -188,7 +188,7 @@ async function fetchRedditStories(subreddit) {
 async function fetchHNStories() {
   const storyIDs = await fetch(HN_TOP_URL)
     .then((r) => r.json())
-    .catch((e) => console.log(error));
+    .catch((e) => console.log(e));
 
   const stories = await Promise.all(
     storyIDs.slice(0, 20).map((id) => {
