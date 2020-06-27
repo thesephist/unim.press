@@ -30,53 +30,52 @@ const MONTHS = [
 
 // from the classic Reddit's top ribbon
 const SUBREDDITS = [
-  "AskReddit",
-  "pics",
-  "news",
-  "worldnews",
-  "funny",
-  "tifu",
-  "videos",
-  "gaming",
-  "aww",
-  "todayilearned",
-  "gifs",
   "Art",
-  "explainlikeimfive",
-  "movies",
-  "Jokes",
-  "TwoXChromosomes",
-  "mildlyinteresting",
-  "LifeProTips",
+  "AskReddit",
   "askscience",
-  "IAmA",
-  "dataisbeautiful",
+  "aww",
+  "blog",
   "books",
+  "creepy",
+  "dataisbeautiful",
+  "DIY",
+  "Documentaries",
+  "EarthPorn",
+  "explainlikeimfive",
+  "food",
+  "funny",
+  "Futurology",
+  "gadgets",
+  "gaming",
+  "GetMotivated",
+  "gifs",
+  "history",
+  "IAmA",
+  "InternetIsBeautiful",
+  "Jokes",
+  "LifeProTips",
+  "listentothis",
+  "mildlyinteresting",
+  "movies",
+  "Music",
+  "news",
+  "nosleep",
+  "nottheonion",
+  "OldSchoolCool",
+  "philosophy",
+  "photoshopbattles",
+  "pics",
   "science",
   "Showerthoughts",
-  "gadgets",
-  "Futurology",
-  "nottheonion",
-  "history",
-  "sports",
-  "OldSchoolCool",
-  "GetMotivated",
-  "DIY",
-  "photoshopbattles",
-  "nosleep",
-  "Music",
   "space",
-  "food",
+  "sports",
+  "tifu",
+  "todayilearned",
+  "TwoXChromosomes",
   "UpliftingNews",
-  "EarthPorn",
-  "Documentaries",
-  "InternetIsBeautiful",
+  "videos",
+  "worldnews",
   "WritingPrompts",
-  "creepy",
-  "philosophy",
-  "announcements",
-  "listentothis",
-  "blog",
 ];
 
 // Random page number for "Continued on Page..."
@@ -140,8 +139,12 @@ function decodeHTMLEntities(s) {
 }
 
 // fetch and normalize stories from a subreddit's "hot" section
-async function fetchRedditStories(subreddit) {
-  const resp = await fetch(`https://api.reddit.com/r/${subreddit}/hot?limit=25`)
+async function fetchRedditStories(subreddit, allTime = false) {
+  const resp = await fetch(
+    `https://api.reddit.com/r/${subreddit}/${
+      allTime ? "top?t=all&" : "hot?"
+    }limit=25`
+  )
     .then((r) => r.json())
     .catch((e) => console.log(e));
   const posts = resp.data.children;
@@ -277,8 +280,11 @@ function Story(story) {
 class App extends Component {
   init() {
     this.stories = [];
-    this.subreddit = window.location.hash.substr(1) || "all";
     this._loading = false;
+
+    const [first, second] = window.location.hash.substr(1).split("/");
+    this.subreddit = first || "all";
+    this.allTime = second == "top";
 
     this.resize = debounce(this.resize.bind(this), 500);
     window.addEventListener("resize", this.resize);
@@ -295,11 +301,26 @@ class App extends Component {
     if (this.subreddit == "hn") {
       this.stories = await fetchHNStories();
     } else {
-      this.stories = await fetchRedditStories(this.subreddit);
+      this.stories = await fetchRedditStories(this.subreddit, this.allTime);
     }
 
     this._loading = false;
     this.render();
+  }
+  handleInputChange() {
+    const newHash = this.subreddit + (this.allTime ? "/top" : "");
+    if (window.location.hash.substr(1) === newHash) {
+      return;
+    }
+    window.location.hash = newHash;
+
+    this.fetch();
+
+    try {
+      ga("send", "pageview", window.location.pathname + window.location.hash);
+    } catch (e) {
+      console.log(e);
+    }
   }
   compose() {
     const stories = this.stories.slice();
@@ -358,8 +379,10 @@ class App extends Component {
             <p class="header-edition-body justify">
               <strong>The Unim.press</strong> is a Reddit reader in the style of
               a certain well-known metropolitan newspaper. You're currently
-              reading /r/${this.subreddit} on the Unim.press. The Unim.press is
-              built by
+              reading
+              ${this.allTime ? "all-time top posts of " : ""}/r/${this
+                .subreddit}.
+              The Unim.press is built by
               <strong
                 ><a target="_blank" href="https://thesephist.com"
                   >@thesephist</a
@@ -376,22 +399,18 @@ class App extends Component {
           <div class="header-vol bar-aside">VOL. CLXX . . . No. 3.14159</div>
           <div class="header-nyc">New York, ${formatDate()}</div>
           <div class="header-controls bar-aside">
-            See other subreddits–<select
+            Top?
+            <input
+              type="checkbox"
+              checked="${this.allTime}"
               oninput="${(evt) => {
-                const selected = evt.target.value;
-                window.location.hash = selected;
-                this.subreddit = selected;
-                this.fetch();
-
-                try {
-                  ga(
-                    "send",
-                    "pageview",
-                    window.location.pathname + window.location.hash
-                  );
-                } catch (e) {
-                  console.log(e);
-                }
+                this.allTime = evt.target.checked;
+                this.handleInputChange();
+              }}"
+            />&#160;&#160;Other subreddits–<select
+              oninput="${(evt) => {
+                this.subreddit = evt.target.value;
+                this.handleInputChange();
               }}"
             >
               <option value="all" selected>all</option>
