@@ -148,6 +148,29 @@ header,
 
 .header-controls {
   text-align: right;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  white-space: nowrap;
+}
+
+.header-controls input[type="checkbox"] {
+  margin: 0 6px;
+}
+
+.custom-select {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #495057;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  flex-shrink: 1;
+  flex-grow: 1;
+  min-width: 0;
 }
 
 /* STORY */
@@ -304,16 +327,7 @@ header,
 .mini {
   font-size: 0.7rem;
 }
-.custom-select {
-  font-size: 1rem;
-  line-height: 1.5;
-  color: #495057;
-  background-color: #fff;
-  background-clip: padding-box;
-  border: 1px solid #ced4da;
-  border-radius: .25rem;
-  transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out; 
-}
+
 @keyframes wowwow {
   0%,
   100% {

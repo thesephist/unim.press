@@ -398,21 +398,25 @@ class App extends Component {
         <div class="header-bar flex-row">
           <div class="header-vol bar-aside">VOL. CLXX . . . No. 3.14159</div>
           <div class="header-nyc">New York, ${formatDate()}</div>
-          <div class="header-controls bar-aside">
-            Top?
+          <div class="header-controls bar-aside flex-row">
+            <label for="top-checkbox">Top?</label>
             <input
+              id="top-checkbox"
               type="checkbox"
               checked="${this.allTime}"
               oninput="${(evt) => {
                 this.allTime = evt.target.checked;
                 this.handleInputChange();
               }}"
-            />&#160;&#160;Other subreddits–<select
+            />
+            <label for="sub-select">Other subreddits–</label>
+            <select
+              id="sub-select"
+              class="custom-select"
               oninput="${(evt) => {
                 this.subreddit = evt.target.value;
                 this.handleInputChange();
               }}"
-              class="custom-select"
             >
               <option value="all" selected>all</option>
               <option value="popular" selected>popular</option>
