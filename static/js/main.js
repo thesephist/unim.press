@@ -412,6 +412,7 @@ class App extends Component {
                 this.subreddit = evt.target.value;
                 this.handleInputChange();
               }}"
+              class="custom-select"
             >
               <option value="all" selected>all</option>
               <option value="popular" selected>popular</option>
