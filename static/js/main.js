@@ -182,7 +182,7 @@ async function fetchRedditStories(subreddit, allTime = false) {
             )) ||
           null,
         source: "/r/" + subreddit,
-        text: selftext,
+        text: decodeHTMLEntities(selftext),
       };
     });
 }
