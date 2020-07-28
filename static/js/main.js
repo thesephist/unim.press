@@ -149,9 +149,10 @@ async function fetchRedditStories(subreddit, allTime = false) {
     .catch((e) => console.log(e));
   const posts = resp.data.children;
 
-  return posts
+
+  return Promise.all(posts
     .filter((post) => !post.data.pinned && !post.data.stickied)
-    .map((post) => {
+    .map(async (post) => {
       let {
         title,
         author,
@@ -162,9 +163,12 @@ async function fetchRedditStories(subreddit, allTime = false) {
         selftext,
       } = post.data;
 
+      var topComment = await fetchTopRedditComment(permalink);
+
       return {
         title: decodeHTMLEntities(title),
         author,
+        body: topComment,
         created: created_utc,
         authorHref: `https://www.reddit.com/user/${author}`,
         href: `https://www.reddit.com${permalink}`,
@@ -184,7 +188,19 @@ async function fetchRedditStories(subreddit, allTime = false) {
         source: "/r/" + subreddit,
         text: decodeHTMLEntities(selftext),
       };
-    });
+    }));
+}
+
+// get top comment for fetchRedditStories
+async function fetchTopRedditComment (permalink) {
+  const commentsResp = await fetch(
+    `https://api.reddit.com${permalink}`
+  )
+    .then((r) => r.json())
+    .catch((e) => console.log(e));
+  const comments = commentsResp[1].data.children;
+  const topComment = comments[0].data.stickied ? comments[1].data.body : comments[0].data.body;
+  return Promise.resolve(topComment)
 }
 
 // when you go to /#hn, it actually loads the top 20 posts of Hacker News
@@ -205,6 +221,7 @@ async function fetchHNStories() {
     return {
       title: story.title,
       author: story.by,
+      body: null,
       authorHref: `https://news.ycombinator.com/user?id=${story.by}`,
       href: story.url,
       imageHref: null,
@@ -213,7 +230,10 @@ async function fetchHNStories() {
   });
 }
 
-function StoryBody(created, text) {
+function StoryBody(created, text, body) {
+  if (body == null) {
+    body = `Lorem ipsum dolor sit amet, ei mel cibo meliore instructior, eam te etiam clita. Id falli facilis intellegam his, eu populo dolorem offendit eam. Noster nemore luptatum ex sit. Ei sea melius definitiones.`;
+  }
   if (text) {
     const words = text.split(" ");
     if (words.length > 100) {
@@ -232,12 +252,7 @@ function StoryBody(created, text) {
     }
   }
 
-  return html`<p>
-    ${formatRelativeDate(created)}–Lorem ipsum dolor sit amet, ei mel cibo
-    meliore instructior, eam te etiam clita. Id falli facilis intellegam his, eu
-    populo dolorem offendit eam. Noster nemore luptatum ex sit. Ei sea melius
-    definitiones.
-  </p>`;
+  return html`<p>${formatRelativeDate(created)}–${body}</p>`;
 }
 
 // All stories that appear have the same DOM structure, displayed
@@ -250,6 +265,7 @@ function Story(story) {
   const {
     title,
     author,
+    body,
     created,
     authorHref,
     href,
@@ -272,7 +288,7 @@ function Story(story) {
     </div>
     <a href="${href}" target="_blank">
       ${imageHref ? html`<img class="story-image" src="${imageHref}" />` : null}
-      <div class="story-content">${StoryBody(created, text)}</div>
+      <div class="story-content">${StoryBody(created, text, body)}</div>
     </a>
   </div>`;
 }
