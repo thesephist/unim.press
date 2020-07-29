@@ -163,12 +163,11 @@ async function fetchRedditStories(subreddit, allTime = false) {
           selftext,
         } = post.data;
 
-        var topComment = await fetchTopRedditComment(permalink);
+        selftext = selftext || (await fetchTopRedditComment(permalink));
 
         return {
           title: decodeHTMLEntities(title),
           author,
-          body: topComment,
           created: created_utc,
           authorHref: `https://www.reddit.com/user/${author}`,
           href: `https://www.reddit.com${permalink}`,
@@ -194,14 +193,29 @@ async function fetchRedditStories(subreddit, allTime = false) {
 
 // get top comment for fetchRedditStories
 async function fetchTopRedditComment(permalink) {
-  const commentsResp = await fetch(`https://api.reddit.com${permalink}`)
+  // here we limit each comment request to top 5 comments.
+  // either there is a non stickied-comment in the top5, or we bail
+  // because otherwise loading the feed takes too long.
+  const commentsResp = await fetch(`https://api.reddit.com${permalink}?limit=5`)
     .then((r) => r.json())
-    .catch((e) => console.log(e));
+    .catch((e) => {
+      console.error(e);
+      return [];
+    });
+
+  if (!commentsResp.length) {
+    return "";
+  }
+
   const comments = commentsResp[1].data.children;
-  const topComment = comments[0].data.stickied
-    ? comments[1].data.body
-    : comments[0].data.body;
-  return Promise.resolve(topComment);
+  const regularComments = comments.filter(
+    (c) => !c.data.pinned && !c.data.stickied
+  );
+  if (!regularComments.length) {
+    return "";
+  }
+
+  return regularComments[0].data.body;
 }
 
 // when you go to /#hn, it actually loads the top 20 posts of Hacker News
@@ -222,7 +236,6 @@ async function fetchHNStories() {
     return {
       title: story.title,
       author: story.by,
-      body: null,
       authorHref: `https://news.ycombinator.com/user?id=${story.by}`,
       href: story.url,
       imageHref: null,
@@ -231,29 +244,22 @@ async function fetchHNStories() {
   });
 }
 
-function StoryBody(created, text, body) {
-  if (body == null) {
-    body = `Lorem ipsum dolor sit amet, ei mel cibo meliore instructior, eam te etiam clita. Id falli facilis intellegam his, eu populo dolorem offendit eam. Noster nemore luptatum ex sit. Ei sea melius definitiones.`;
-  }
-  if (text) {
-    const words = text.split(" ");
-    if (words.length > 100) {
-      return [
-        html`<p>
-          ${formatRelativeDate(created)}–${text
-            .split(" ")
-            .slice(0, 100)
-            .join(" ")}
-          ...
-        </p>`,
-        html`<p class="continued><em>Continued on Page A${R()}</em></p>`,
-      ];
-    } else {
-      return html`<p>${formatRelativeDate(created)}–${text}</p>`;
-    }
+function StoryBody(created, text) {
+  if (!text) {
+    text = `Lorem ipsum dolor sit amet, ei mel cibo meliore instructior, eam te etiam clita. Id falli facilis intellegam his, eu populo dolorem offendit eam. Noster nemore luptatum ex sit. Ei sea melius definitiones.`;
   }
 
-  return html`<p>${formatRelativeDate(created)}–${body}</p>`;
+  const words = text.split(" ");
+  if (words.length > 100) {
+    return [
+      html`<p>
+        ${formatRelativeDate(created)}–${words.slice(0, 100).join(" ")} ...
+      </p>`,
+      html`<p class="continued><em>Continued on Page A${R()}</em></p>`,
+    ];
+  }
+
+  return html`<p>${formatRelativeDate(created)}–${text}</p>`;
 }
 
 // All stories that appear have the same DOM structure, displayed
@@ -266,7 +272,6 @@ function Story(story) {
   const {
     title,
     author,
-    body,
     created,
     authorHref,
     href,
@@ -289,7 +294,7 @@ function Story(story) {
     </div>
     <a href="${href}" target="_blank">
       ${imageHref ? html`<img class="story-image" src="${imageHref}" />` : null}
-      <div class="story-content">${StoryBody(created, text, body)}</div>
+      <div class="story-content">${StoryBody(created, text)}</div>
     </a>
   </div>`;
 }
