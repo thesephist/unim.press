@@ -149,58 +149,59 @@ async function fetchRedditStories(subreddit, allTime = false) {
     .catch((e) => console.log(e));
   const posts = resp.data.children;
 
+  return Promise.all(
+    posts
+      .filter((post) => !post.data.pinned && !post.data.stickied)
+      .map(async (post) => {
+        let {
+          title,
+          author,
+          created_utc,
+          permalink,
+          subreddit,
+          preview,
+          selftext,
+        } = post.data;
 
-  return Promise.all(posts
-    .filter((post) => !post.data.pinned && !post.data.stickied)
-    .map(async (post) => {
-      let {
-        title,
-        author,
-        created_utc,
-        permalink,
-        subreddit,
-        preview,
-        selftext,
-      } = post.data;
+        var topComment = await fetchTopRedditComment(permalink);
 
-      var topComment = await fetchTopRedditComment(permalink);
-
-      return {
-        title: decodeHTMLEntities(title),
-        author,
-        body: topComment,
-        created: created_utc,
-        authorHref: `https://www.reddit.com/user/${author}`,
-        href: `https://www.reddit.com${permalink}`,
-        // this monstrosity traverses the object path down, checking for
-        // any absent properties, to get a thumbnail image
-        // of at most 640px wide.
-        imageHref:
-          (preview &&
-            preview.images &&
-            preview.images[0].resolutions.length &&
-            decodeHTMLEntities(
-              preview.images[0].resolutions[
-                Math.min(3, preview.images[0].resolutions.length - 1)
-              ].url
-            )) ||
-          null,
-        source: "/r/" + subreddit,
-        text: decodeHTMLEntities(selftext),
-      };
-    }));
+        return {
+          title: decodeHTMLEntities(title),
+          author,
+          body: topComment,
+          created: created_utc,
+          authorHref: `https://www.reddit.com/user/${author}`,
+          href: `https://www.reddit.com${permalink}`,
+          // this monstrosity traverses the object path down, checking for
+          // any absent properties, to get a thumbnail image
+          // of at most 640px wide.
+          imageHref:
+            (preview &&
+              preview.images &&
+              preview.images[0].resolutions.length &&
+              decodeHTMLEntities(
+                preview.images[0].resolutions[
+                  Math.min(3, preview.images[0].resolutions.length - 1)
+                ].url
+              )) ||
+            null,
+          source: "/r/" + subreddit,
+          text: decodeHTMLEntities(selftext),
+        };
+      })
+  );
 }
 
 // get top comment for fetchRedditStories
-async function fetchTopRedditComment (permalink) {
-  const commentsResp = await fetch(
-    `https://api.reddit.com${permalink}`
-  )
+async function fetchTopRedditComment(permalink) {
+  const commentsResp = await fetch(`https://api.reddit.com${permalink}`)
     .then((r) => r.json())
     .catch((e) => console.log(e));
   const comments = commentsResp[1].data.children;
-  const topComment = comments[0].data.stickied ? comments[1].data.body : comments[0].data.body;
-  return Promise.resolve(topComment)
+  const topComment = comments[0].data.stickied
+    ? comments[1].data.body
+    : comments[0].data.body;
+  return Promise.resolve(topComment);
 }
 
 // when you go to /#hn, it actually loads the top 20 posts of Hacker News
