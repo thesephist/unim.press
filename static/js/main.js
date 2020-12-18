@@ -114,7 +114,8 @@ function formatRelativeDate(timestamp) {
   } else if (delta < 3600) {
     return `${~~(delta / 60)} min ago`;
   } else if (delta < 86400) {
-    return `${~~(delta / 3600)} hrs ago`;
+    const day = ~~(delta / 3600);
+    return day === 1 ? `${day} hr ago` : `${day} hrs ago`;
   } else if (delta < 86400 * 2) {
     return "yesterday";
   } else if (delta < 86400 * 3) {
