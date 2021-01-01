@@ -181,6 +181,7 @@ header,
   box-sizing: border-box;
   width: 100%;
   overflow: hidden;
+  word-break: break-word;
 }
 
 .story-title:hover,
