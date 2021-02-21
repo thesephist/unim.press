@@ -417,9 +417,7 @@ class App extends Component {
         </div>
         <div class="spreads flex-column">
           <div class="top flex-row">
-            <div class="center-spread">
-              ${centerSpreads.map(Story)}
-            </div>
+            <div class="center-spread">${centerSpreads.map(Story)}</div>
             <div class="sidebar sidebar-spread flex-column smaller">
               ${sidebarSpread.map(Story)}
             </div>
