@@ -141,6 +141,10 @@ function decodeHTMLEntities(s) {
   return txt.textContent;
 }
 
+// Reddit's post metadata on images it contains is quite complex with lots of
+// different potential formats, so the function to extract a usable image
+// thumbnail URL is extracted out into this function. Each possible case is an
+// if-case, and we fallback to `null` which results in no image being shown.
 function getFirstImageFromGalleryOrPreview(postData) {
   const { preview, media_metadata, thumbnail } = postData;
 
@@ -148,8 +152,7 @@ function getFirstImageFromGalleryOrPreview(postData) {
   // and for single images uploaded to Reddit's image server.
   if (preview) {
     return (
-      (preview &&
-        preview.images &&
+      (preview.images &&
         preview.images[0].resolutions.length &&
         decodeHTMLEntities(
           preview.images[0].resolutions[
