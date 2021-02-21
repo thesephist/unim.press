@@ -3,6 +3,8 @@ const html = window.jdom;
 
 const HN_TOP_URL = "https://hacker-news.firebaseio.com/v0/topstories.json";
 
+const MIN_IMAGE_WIDTH = 500;
+
 const DAYS = [
   "Sunday",
   "Monday",
@@ -139,6 +141,59 @@ function decodeHTMLEntities(s) {
   return txt.textContent;
 }
 
+function getFirstImageFromGalleryOrPreview(postData) {
+  const { preview, media_metadata, thumbnail } = postData;
+
+  // Reddit generates preview images for images hosted on third-party sites,
+  // and for single images uploaded to Reddit's image server.
+  if (preview) {
+    return (
+      (preview &&
+        preview.images &&
+        preview.images[0].resolutions.length &&
+        decodeHTMLEntities(
+          preview.images[0].resolutions[
+            Math.min(3, preview.images[0].resolutions.length - 1)
+          ].url
+        )) ||
+      null
+    );
+  }
+
+  // With Reddit's newer support for uploading a gallery, Reddit's API provides
+  // image previews in a completely different format supporting multiple
+  // images. This is not documented but this loop aims to check for that case
+  // and support it.
+  if (media_metadata) {
+    for (const [imgID, metadata] of Object.entries(media_metadata)) {
+      for (const p of metadata.p) {
+        if (p.x >= MIN_IMAGE_WIDTH) {
+          // NOTE: unclear why the URL includes 'amp;', but we need to strip it
+          // from query strings in the link for the links to work cross-origin.
+          return p.u.replaceAll("amp;", ""); // u is URL
+        }
+      }
+
+      // if no sizes bigger than MIN, pick the largest
+      let biggest = 0;
+      let biggestLink = null;
+      for (const p of metadata.p) {
+        if (p.x >= biggest) {
+          biggest = p.x;
+          biggestLink = p.u.replaceAll("amp;", ""); // u is URL
+        }
+      }
+      return biggestLink;
+    }
+  }
+
+  // Fall back to a blurry / smaller image thumbnail instead of showing no
+  // photo, if available.
+  if (thumbnail && thumbnail.startsWith("http")) return thumbnail;
+
+  return null;
+}
+
 // fetch and normalize stories from a subreddit's "hot" section
 async function fetchRedditStories(subreddit, allTime = false) {
   const resp = await fetch(
@@ -160,7 +215,6 @@ async function fetchRedditStories(subreddit, allTime = false) {
           created_utc,
           permalink,
           subreddit,
-          preview,
           selftext,
         } = post.data;
 
@@ -175,16 +229,7 @@ async function fetchRedditStories(subreddit, allTime = false) {
           // this monstrosity traverses the object path down, checking for
           // any absent properties, to get a thumbnail image
           // of at most 640px wide.
-          imageHref:
-            (preview &&
-              preview.images &&
-              preview.images[0].resolutions.length &&
-              decodeHTMLEntities(
-                preview.images[0].resolutions[
-                  Math.min(3, preview.images[0].resolutions.length - 1)
-                ].url
-              )) ||
-            null,
+          imageHref: getFirstImageFromGalleryOrPreview(post.data),
           source: "/r/" + subreddit,
           text: decodeHTMLEntities(selftext),
         };
