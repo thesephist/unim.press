@@ -169,6 +169,9 @@ function getFirstImageFromGalleryOrPreview(postData) {
   // and support it.
   if (media_metadata) {
     for (const [imgID, metadata] of Object.entries(media_metadata)) {
+      // if media not available, find the next available option
+      if (metadata.status === 'failed') continue;
+
       for (const p of metadata.p) {
         if (p.x >= MIN_IMAGE_WIDTH) {
           // NOTE: unclear why the URL includes 'amp;', but we need to strip it
