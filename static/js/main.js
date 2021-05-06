@@ -170,7 +170,8 @@ function getFirstImageFromGalleryOrPreview(postData) {
   if (media_metadata) {
     for (const [imgID, metadata] of Object.entries(media_metadata)) {
       // if media not available, find the next available option
-      if (metadata.status === 'failed') continue;
+      if (metadata.status === "failed" || metadata.e === "RedditVideo")
+        continue;
 
       for (const p of metadata.p) {
         if (p.x >= MIN_IMAGE_WIDTH) {
