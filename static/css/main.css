@@ -18,7 +18,7 @@ body {
 
 body,
 select {
-  font-family: "EB Garamond", "Georgia", "Times New Roman", serif;
+  font-family: "EB Garamond", "Georgia", "Times New Roman", serif, sans-serif;
 }
 
 .app {
